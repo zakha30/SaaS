@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <AssemblyName>SaaS.Modules.Loads</AssemblyName>
+    <RootNamespace>SaaS.Modules.Loads</RootNamespace>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,1 @@
+Implementation of VehicleRepository for Fleet module (placed under Infrastructure project to access AppDbContext).

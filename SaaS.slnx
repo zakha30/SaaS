@@ -1,0 +1,35 @@
+<Solution>
+  <Folder Name="/docs/">
+    <File Path="docs/project_context.md" />
+    <File Path="docs/system_prompt.md" />
+  </Folder>
+  <Folder Name="/prompt/" />
+  <Folder Name="/prompt/backend/">
+    <File Path="prompts/backend/extend_backend.md" />
+    <File Path="prompts/backend/multi_tenant.md" />
+  </Folder>
+  <Folder Name="/prompt/features/">
+    <File Path="prompts/features/bookings.md" />
+    <File Path="prompts/features/fleet.md" />
+    <File Path="prompts/features/trips.md" />
+  </Folder>
+  <Folder Name="/prompt/frontend/">
+    <File Path="prompts/fronend/build_frontend.md" />
+  </Folder>
+  <Project Path="SaaS.API/SaaS.API.csproj" />
+  <Project Path="SaaS.Infrastructure/SaaS.Infrastructure.csproj" />
+  <Project Path="SaaS.IntegrationTests/SaaS.IntegrationTests.csproj" />
+  <Project Path="SaaS.Modules.Auth/SaaS.Modules.Auth.csproj" />
+  <Project Path="SaaS.Modules.Classifieds/SaaS.Modules.Classifieds.csproj" />
+  <Project Path="SaaS.Modules.Dashboard/SaaS.Modules.Dashboard.csproj" />
+  <Project Path="SaaS.Modules.Directory/SaaS.Modules.Directory.csproj" />
+  <Project Path="SaaS.Modules.Forum/SaaS.Modules.Forum.csproj" />
+  <Project Path="SaaS.Modules.Jobs/SaaS.Modules.Jobs.csproj" />
+  <Project Path="SaaS.Modules.Listings/SaaS.Modules.Listings.csproj" />
+  <Project Path="SaaS.Modules.Loads/SaaS.Modules.Loads.csproj" />
+  <Project Path="SaaS.Modules.Notifications/SaaS.Modules.Notifications.csproj" />
+  <Project Path="SaaS.Modules.Quotes/SaaS.Modules.Quotes.csproj" />
+  <Project Path="SaaS.Modules.Tenants/SaaS.Modules.Tenants.csproj" />
+  <Project Path="SaaS.Shared/SaaS.Shared.csproj" />
+  <Project Path="SaaS.UnitTests/SaaS.UnitTests.csproj" />
+</Solution>

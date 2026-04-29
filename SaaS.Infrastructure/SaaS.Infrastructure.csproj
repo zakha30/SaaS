@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="16.1.1" />
+		<!-- EntityFramework 6.x removed — use Microsoft.EntityFrameworkCore instead -->
+		<!-- Microsoft.AspNetCore.Mvc.Core removed — included in the .NET 10 framework -->
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.*" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.6" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.6">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.6" />
+		<PackageReference Include="SendGrid" Version="9.*" />
+		<ProjectReference Include="..\SaaS.Modules.Dashboard\SaaS.Modules.Dashboard.csproj" />
+		<ProjectReference Include="..\SaaS.Shared\SaaS.Shared.csproj" />
+		<ProjectReference Include="..\SaaS.Modules.Tenants\SaaS.Modules.Tenants.csproj" />
+		<ProjectReference Include="..\SaaS.Modules.Auth\SaaS.Modules.Auth.csproj" />
+		<ProjectReference Include="..\SaaS.Modules.Listings\SaaS.Modules.Listings.csproj" />
+		<ProjectReference Include="..\SaaS.Modules.Quotes\SaaS.Modules.Quotes.csproj" />
+		<ProjectReference Include="..\SaaS.Modules.Notifications\SaaS.Modules.Notifications.csproj" />
+		<!-- New module references -->
+		<ProjectReference Include="..\SaaS.Modules.Loads\SaaS.Modules.Loads.csproj" />
+		<ProjectReference Include="..\SaaS.Modules.Directory\SaaS.Modules.Directory.csproj" />
+		<ProjectReference Include="..\SaaS.Modules.Classifieds\SaaS.Modules.Classifieds.csproj" />
+		<ProjectReference Include="..\SaaS.Modules.Jobs\SaaS.Modules.Jobs.csproj" />
+		<ProjectReference Include="..\SaaS.Modules.Forum\SaaS.Modules.Forum.csproj" />
+	</ItemGroup>
+</Project>
