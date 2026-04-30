@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using SaaS.Api.Swagger;
 using SaaS.Infrastructure.Data;
@@ -188,7 +189,13 @@ app.UseAuthorization();
 await app.ApplyMigrationsAsync();
 
 // 11. Map endpoints.
-app.UseStaticFiles(); // serves wwwroot/
+// Add this in the pipeline after CORS
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "wwwroot")),
+    RequestPath = ""
+}); // serves wwwroot/
 app.MapControllers();
 app.MapHealthChecks("/health", new HealthCheckOptions { AllowCachingResponses = false });
 

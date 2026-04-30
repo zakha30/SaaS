@@ -1,5 +1,7 @@
-using System;
+using SaaS.Infrastructure.Modules.Fleet.DTOs;
 using SaaS.Shared;
+using System;
+using System.Collections.Generic;
 
 namespace SaaS.Infrastructure.Modules.Fleet.Entities;
 
@@ -32,8 +34,8 @@ public sealed class Vehicle : TenantEntity
     public string? ImageUrl { get; set; }
 
     public string MembershipTier { get; set; } = MembershipTierConstants.Free;
-
     public Guid PostedByUserId { get; set; }
+    public ICollection<FleetImage> Images { get; set; } = new List<FleetImage>();
 }
 
 public enum VehicleCategory
@@ -58,3 +60,5 @@ public static class VehicleStatus
     public const string InService = "InService";
     public const string Unavailable = "Unavailable";
 }
+
+

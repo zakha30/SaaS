@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using SaaS.Infrastructure.Modules.Fleet.DTOs;
 using SaaS.Infrastructure.Modules.Fleet.Entities;
 
 namespace SaaS.Infrastructure.Data.Configurations;
@@ -52,5 +53,41 @@ public sealed class VehicleConfiguration : IEntityTypeConfiguration<Vehicle>
         builder.HasIndex(v => new { v.TenantId, v.IsCrossBorderCapable });
         builder.HasIndex(v => v.TenantId);
         builder.HasIndex(v => v.RegistrationNumber).IsUnique();
+    }
+}
+
+public sealed class FleetImageConfiguration : IEntityTypeConfiguration<FleetImage>
+{
+    public void Configure(EntityTypeBuilder<FleetImage> builder)
+    {
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.ImageUrl)
+            .IsRequired()
+            .HasMaxLength(1000);
+
+        builder.Property(x => x.FileName)
+            .IsRequired()
+            .HasMaxLength(500);
+
+        builder.Property(x => x.ContentType)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(x => x.FileSize)
+            .IsRequired();
+
+        builder.Property(x => x.UploadedBy);
+
+        // Foreign key to Vehicle
+        builder.HasOne(x => x.Vehicle)
+            .WithMany(x => x.Images)
+            .HasForeignKey(x => x.VehicleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Index on VehicleId for fast lookups
+        builder.HasIndex(x => x.VehicleId);
+        // Index on TenantId for multi-tenant queries
+       
     }
 }

@@ -7,14 +7,32 @@ using Microsoft.IdentityModel.Tokens;
 using SaaS.Infrastructure.Data;
 using SaaS.Infrastructure.Email;
 using SaaS.Infrastructure.Identity;
+using SaaS.Infrastructure.Modules.Fleet.Services;
 using SaaS.Infrastructure.Repositories;
+using SaaS.Infrastructure.Repositories.Fleet;
 using SaaS.Infrastructure.Services;
 using SaaS.Modules.Auth.Entities;
 using SaaS.Modules.Auth.Repositories;
 using SaaS.Modules.Auth.Services;
+using SaaS.Modules.Classifieds.Mappings;
+using SaaS.Modules.Classifieds.Repositories;
+using SaaS.Modules.Classifieds.Services;
 using SaaS.Modules.Dashboard.Services;
+using SaaS.Modules.Directory.Mappings;
+using SaaS.Modules.Directory.Repositories;
+using SaaS.Modules.Directory.Services;
+using SaaS.Modules.Forum.Mappings;
+using SaaS.Modules.Forum.Repositories;
+using SaaS.Modules.Forum.Services;
+using SaaS.Modules.Jobs.Mappings;
+using SaaS.Modules.Jobs.Repositories;
+using SaaS.Modules.Jobs.Services;
 using SaaS.Modules.Listings.Repositories;
 using SaaS.Modules.Listings.Services;
+using SaaS.Modules.Loads.Mappings;
+// New module namespaces
+using SaaS.Modules.Loads.Repositories;
+using SaaS.Modules.Loads.Services;
 using SaaS.Modules.Notifications.Repositories;
 using SaaS.Modules.Notifications.Services;
 using SaaS.Modules.Quotes.Repositories;
@@ -23,31 +41,11 @@ using SaaS.Modules.Tenants.Repositories;
 using SaaS.Modules.Tenants.Services;
 using SaaS.Shared;
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using System.Linq;
-
-// New module namespaces
-using SaaS.Modules.Loads.Repositories;
-using SaaS.Modules.Loads.Services;
-using SaaS.Modules.Loads.Mappings;
-
-using SaaS.Modules.Directory.Repositories;
-using SaaS.Modules.Directory.Services;
-using SaaS.Modules.Directory.Mappings;
-
-using SaaS.Modules.Classifieds.Repositories;
-using SaaS.Modules.Classifieds.Services;
-using SaaS.Modules.Classifieds.Mappings;
-
-using SaaS.Modules.Jobs.Repositories;
-using SaaS.Modules.Jobs.Services;
-using SaaS.Modules.Jobs.Mappings;
-
-using SaaS.Modules.Forum.Repositories;
-using SaaS.Modules.Forum.Services;
-using SaaS.Modules.Forum.Mappings;
+using static SaaS.Infrastructure.Modules.Fleet.Services.VehicleService;
 
 namespace SaaS.Infrastructure.Extensions;
 
@@ -203,6 +201,10 @@ public static class ServiceCollectionExtensions
                            SaaS.Infrastructure.Repositories.ForumRepository>();
         services.AddScoped<SaaS.Modules.Forum.Services.IThreadService,
                            SaaS.Modules.Forum.Services.ThreadService>();
+
+        // Fleet Image Services
+        services.AddScoped<IFleetImageRepository, FleetImageRepository>();
+        services.AddScoped<IFleetImageService, FleetImageService>();
 
         return services;
     }

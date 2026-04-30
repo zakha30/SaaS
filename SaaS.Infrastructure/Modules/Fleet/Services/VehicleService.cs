@@ -89,4 +89,130 @@ public sealed class VehicleService(
             return Result<string>.Failure($"Image upload failed: {ex.Message}");
         }
     }
+
+    public sealed class FleetImageService(
+    IFleetImageRepository imageRepository,
+    IVehicleRepository vehicleRepository,
+    IMapper mapper) : IFleetImageService
+    {
+        private const long MaxFileSizeBytes = 5 * 1024 * 1024; // 5 MB
+        private static readonly string[] AllowedContentTypes =
+        {
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif"
+    };
+
+        public async Task<Result<FleetImageResponseDto>> UploadImageAsync(
+            Guid fleetId, IFormFile file, string userId, CancellationToken ct = default)
+        {
+            // Step 1: Validate fleet exists
+            var fleet = await vehicleRepository.GetByIdAsync(fleetId, ct);
+            if (fleet is null)
+                return Result<FleetImageResponseDto>.Failure($"Fleet (Vehicle) with ID {fleetId} not found.");
+
+            // Step 2: Validate file
+            if (file is null || file.Length == 0)
+                return Result<FleetImageResponseDto>.Failure("No file provided.");
+
+            if (file.Length > MaxFileSizeBytes)
+                return Result<FleetImageResponseDto>.Failure($"File size exceeds {MaxFileSizeBytes / (1024 * 1024)}MB limit.");
+
+            if (!AllowedContentTypes.Contains(file.ContentType.ToLowerInvariant()))
+                return Result<FleetImageResponseDto>.Failure(
+                    $"File type '{file.ContentType}' is not allowed. Allowed types: JPG, PNG, WEBP, GIF.");
+
+            try
+            {
+                // Step 3: Save file to disk
+                var uploadDir = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot", "uploads", "vehicles", fleetId.ToString());
+
+                Directory.CreateDirectory(uploadDir);
+
+                // Generate unique filename
+                var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+                var fileName = $"{Guid.NewGuid()}{ext}";
+                var filePath = Path.Combine(uploadDir, fileName);
+
+                // Save file
+                await using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                {
+                    await file.CopyToAsync(stream, ct);
+                }
+
+                // Step 4: Create database record
+                var publicUrl = $"/uploads/vehicles/{fleetId}/{fileName}";
+
+                var image = new FleetImage
+                {
+                    VehicleId = fleetId,
+                    ImageUrl = publicUrl,
+                    FileName = file.FileName,
+                    FileSize = file.Length,
+                    ContentType = file.ContentType,
+                    UploadedBy = userId
+                };
+
+                await imageRepository.AddAsync(image, ct);
+                await imageRepository.SaveChangesAsync(ct);
+
+                // Step 5: Return response
+                return Result<FleetImageResponseDto>.Success(mapper.Map<FleetImageResponseDto>(image));
+            }
+            catch (Exception ex)
+            {
+                return Result<FleetImageResponseDto>.Failure(
+                    $"Error uploading file: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<List<FleetImageResponseDto>>> GetFleetImagesAsync(
+            Guid fleetId, CancellationToken ct = default)
+        {
+            try
+            {
+                var images = await imageRepository.GetByFleetIdAsync(fleetId, ct);
+                var dtos = images.Select(mapper.Map<FleetImageResponseDto>).ToList();
+                return Result<List<FleetImageResponseDto>>.Success(dtos);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<FleetImageResponseDto>>.Failure(
+                    $"Error retrieving images: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<string>> DeleteImageAsync(
+            int imageId, Guid userId, CancellationToken ct = default)
+        {
+            try
+            {
+                var image = await imageRepository.GetByIdAsync(imageId, ct);
+                if (image is null)
+                    return Result<string>.Failure("Image not found.");
+
+                // Delete from disk
+                var filePath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    image.ImageUrl.TrimStart('/'));
+
+                if (File.Exists(filePath))
+                    File.Delete(filePath);
+
+                // Delete from database
+                await imageRepository.DeleteAsync(image, ct);
+                await imageRepository.SaveChangesAsync(ct);
+
+                return Result<string>.Success("Image deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                return Result<string>.Failure($"Error deleting image: {ex.Message}");
+            }
+        }
+    }
 }

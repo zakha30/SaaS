@@ -1,8 +1,15 @@
 using Microsoft.EntityFrameworkCore;
+using SaaS.Infrastructure.Modules.Fleet.DTOs;
 using SaaS.Infrastructure.Modules.Fleet.Entities;
 using SaaS.Infrastructure.Services;
 using SaaS.Modules.Auth.Entities;
+using SaaS.Modules.Classifieds.Entities;
+using SaaS.Modules.Directory.Entities;
+using SaaS.Modules.Forum.Entities;
+using SaaS.Modules.Jobs.Entities;
 using SaaS.Modules.Listings.Entities;
+// New module entity namespaces
+using SaaS.Modules.Loads.Entities;
 using SaaS.Modules.Notifications.Entities;
 using SaaS.Modules.Quotes.Entities;
 using SaaS.Modules.Tenants.Entities;
@@ -12,13 +19,6 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-// New module entity namespaces
-using SaaS.Modules.Loads.Entities;
-using SaaS.Modules.Directory.Entities;
-using SaaS.Modules.Classifieds.Entities;
-using SaaS.Modules.Jobs.Entities;
-using SaaS.Modules.Forum.Entities;
 
 namespace SaaS.Infrastructure.Data;
 
@@ -54,7 +54,7 @@ public sealed class AppDbContext(
     // Forum (community-wide)
     public DbSet<ForumThread> ForumThreads => Set<ForumThread>();
     public DbSet<ForumPost> ForumPosts => Set<ForumPost>();
-
+    public DbSet<FleetImage> FleetImages => Set<FleetImage>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Apply all IEntityTypeConfiguration<T> classes in this assembly
@@ -143,7 +143,7 @@ public sealed class AppDbContext(
 
         modelBuilder.Entity<ForumPost>()
             .HasQueryFilter(p => !p.IsDeleted);
-
+        modelBuilder.Entity<FleetImage>().HasQueryFilter(x => !x.IsDeleted);
         base.OnModelCreating(modelBuilder);
     }
 

@@ -20,5 +20,6 @@ public sealed class VehicleProfile : Profile
 
         CreateMap<UpdateVehicleDto, Vehicle>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+        CreateMap<FleetImage, FleetImageResponseDto>();
     }
 }

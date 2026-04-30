@@ -16,6 +16,9 @@
   <Folder Name="/prompt/frontend/">
     <File Path="prompts/fronend/build_frontend.md" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="D:/TransHubDB.bak" />
+  </Folder>
   <Project Path="SaaS.API/SaaS.API.csproj" />
   <Project Path="SaaS.Infrastructure/SaaS.Infrastructure.csproj" />
   <Project Path="SaaS.IntegrationTests/SaaS.IntegrationTests.csproj" />

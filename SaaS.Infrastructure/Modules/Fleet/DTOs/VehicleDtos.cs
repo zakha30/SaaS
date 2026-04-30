@@ -1,6 +1,7 @@
+using Microsoft.AspNetCore.Http;
+using SaaS.Infrastructure.Modules.Fleet.Entities;
 using System;
 using System.ComponentModel.DataAnnotations;
-using SaaS.Infrastructure.Modules.Fleet.Entities;
 
 namespace SaaS.Infrastructure.Modules.Fleet.DTOs;
 
@@ -172,4 +173,50 @@ public sealed record VehicleFilterDto
     public string? Status { get; init; }
     public int Page { get; init; } = 1;
     public int PageSize { get; init; } = 20;
+}
+
+public class FleetImage
+{
+    public int Id { get; set; }
+    public Guid VehicleId { get; set; }
+    public Vehicle Vehicle { get; set; }
+    public string ImageUrl { get; set; }
+    public string FileName { get; set; }
+    public long FileSize { get; set; }
+    public string ContentType { get; set; }
+    public DateTime UploadedAt { get; set; }
+    public string CreatedBy { get; set; }
+
+    public string UploadedBy { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public bool IsDeleted { get; set; } = false;
+}
+
+public sealed class CreateFleetImageDto
+{
+    [Required(ErrorMessage = "Fleet ID is required")]
+    public Guid FleetId { get; set; }
+
+    [Required(ErrorMessage = "File is required")]
+    public IFormFile File { get; set; } = null!;
+}
+
+public sealed class FleetImageResponseDto
+{
+    public Guid Id { get; set; }
+    public Guid FleetId { get; set; }
+    public string ImageUrl { get; set; } = string.Empty;
+    public string FileName { get; set; } = string.Empty;
+    public long FileSize { get; set; }
+    public string ContentType { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public string UploadedBy { get; set; } = string.Empty;
+    public DateTime UploadedAt { get; set; }
+    public string CreatedBy { get; set; } = string.Empty;
+}
+
+public sealed class DeleteFleetImageDto
+{
+    [Required]
+    public Guid ImageId { get; set; }
 }

@@ -1,12 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using SaaS.Infrastructure.Data;
+using SaaS.Infrastructure.Modules.Fleet.DTOs;
+using SaaS.Infrastructure.Modules.Fleet.Entities;
+using SaaS.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using SaaS.Infrastructure.Data;
-using SaaS.Infrastructure.Modules.Fleet.Entities;
-using SaaS.Shared;
 
 namespace SaaS.Infrastructure.Repositories.Fleet;
 
@@ -79,4 +80,30 @@ public sealed class VehicleRepository(AppDbContext db) : IVehicleRepository
         var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
         return new PagedResult<Vehicle>(items, total, page, pageSize);
     }
+}
+
+public sealed class FleetImageRepository(AppDbContext db) : IFleetImageRepository
+{
+    private IQueryable<FleetImage> BaseQuery => db.Set<FleetImage>().AsNoTracking();
+
+    public async Task<FleetImage?> GetByIdAsync(int id, CancellationToken ct = default) =>
+        await db.Set<FleetImage>().FirstOrDefaultAsync(x => x.Id == id, ct);
+
+    public async Task<List<FleetImage>> GetByFleetIdAsync(Guid fleetId, CancellationToken ct = default) =>
+        await BaseQuery
+            .Where(x => x.VehicleId == fleetId)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(ct);
+
+    public async Task AddAsync(FleetImage image, CancellationToken ct = default) =>
+        await db.Set<FleetImage>().AddAsync(image, ct);
+
+    public async Task DeleteAsync(FleetImage image, CancellationToken ct = default)
+    {
+        db.Set<FleetImage>().Remove(image);
+        await Task.CompletedTask;
+    }
+
+    public async Task SaveChangesAsync(CancellationToken ct = default) =>
+        await db.SaveChangesAsync(ct);
 }
