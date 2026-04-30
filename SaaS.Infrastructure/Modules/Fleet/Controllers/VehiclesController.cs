@@ -64,48 +64,35 @@ public sealed class VehiclesController : ControllerBase
         return res.IsSuccess ? Ok(res.Value) : BadRequest(res.Error);
     }
 
-    [HttpPost("images")]
-    [Authorize]
-    public async Task<IActionResult> UploadImage(
-    IFormFile file, CancellationToken ct)
-    {
-        if (file is null || file.Length == 0)
-            return BadRequest("No file provided.");
-
-        if (file.Length > 5 * 1024 * 1024)
-            return BadRequest("File exceeds 5MB limit.");
-
-        var allowed = new[] { "image/jpeg", "image/png", "image/webp" };
-        if (!allowed.Contains(file.ContentType.ToLower()))
-            return BadRequest("Only JPG, PNG and WEBP images are allowed.");
-
-        var res = await service.UploadImageAsync(file, ct);
-        return res.IsSuccess ? Ok(new { url = res.Value }) : BadRequest(res.Error);
-    }
-
-
+    
     /// <summary>
     /// Upload an image for a fleet (vehicle)
     /// </summary>
     /// <param name="fleetId">The Fleet/Vehicle ID</param>
     /// <param name="file">The image file (JPG, PNG, WEBP, GIF - max 5MB)</param>
     /// <param name="ct">Cancellation token</param>
-    [HttpPost("{fleetId}/images")]
+    
+
+    [HttpPost("images")]
     [Authorize]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadImage(
-        Guid fleetId,
-        [FromForm] IFormFile file,
-        CancellationToken ct)
+    [FromForm] UploadFleetImageRequest request,
+    CancellationToken ct)
     {
-        if (file is null || file.Length == 0)
+        if (request.File is null || request.File.Length == 0)
             return BadRequest(new { error = "No file provided." });
 
         var userId = User.Identity?.Name ?? string.Empty;
-        var res = await _imageService.UploadImageAsync(fleetId, file, userId, ct);
+
+        var res = await _imageService.UploadImageAsync(
+            request.FleetId,
+            request.File,
+            userId,
+            ct);
 
         return res.IsSuccess
-            ? CreatedAtAction(nameof(GetFleetImages), new { fleetId }, res.Value)
+            ? CreatedAtAction(nameof(GetFleetImages), new { fleetId = request.FleetId }, res.Value)
             : BadRequest(new { error = res.Error });
     }
 

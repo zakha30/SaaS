@@ -220,3 +220,9 @@ public sealed class DeleteFleetImageDto
     [Required]
     public Guid ImageId { get; set; }
 }
+
+public class UploadFleetImageRequest
+{
+    public Guid FleetId { get; set; }
+    public IFormFile File { get; set; }
+}
