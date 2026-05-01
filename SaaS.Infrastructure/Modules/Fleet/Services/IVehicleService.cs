@@ -22,11 +22,11 @@ public interface IVehicleService
 public interface IFleetImageService
 {
     Task<Result<FleetImageResponseDto>> UploadImageAsync(
-        Guid fleetId, IFormFile file, string userId, CancellationToken ct = default);
+        Guid vehicleId, IFormFile file, Guid userId, CancellationToken ct = default);
 
     Task<Result<List<FleetImageResponseDto>>> GetFleetImagesAsync(
-        Guid fleetId, CancellationToken ct = default);
+        Guid vehicleId, CancellationToken ct = default);
 
     Task<Result<string>> DeleteImageAsync(
-        int imageId, Guid userId, CancellationToken ct = default);
+        int imageId, Guid userId, CancellationToken ct = default);  // ← int imageId
 }

@@ -19,9 +19,9 @@ public interface IVehicleRepository
 
 public interface IFleetImageRepository
 {
-    Task<FleetImage?> GetByIdAsync(int id, CancellationToken ct = default);
+    Task<FleetImage?> GetByIdAsync(int id, CancellationToken ct = default);  // ← int id
 
-    Task<List<FleetImage>> GetByFleetIdAsync(Guid fleetId, CancellationToken ct = default);
+    Task<List<FleetImage>> GetByVehicleIdAsync(Guid vehicleId, CancellationToken ct = default);  // ← renamed
 
     Task AddAsync(FleetImage image, CancellationToken ct = default);
 

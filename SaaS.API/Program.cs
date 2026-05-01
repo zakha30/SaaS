@@ -186,7 +186,7 @@ app.UseTenantResolution();
 app.UseAuthorization();
 
 // 10. Run migrations and seed data on startup.
-await app.ApplyMigrationsAsync();
+//await app.ApplyMigrationsAsync();
 
 // 11. Map endpoints.
 // Add this in the pipeline after CORS

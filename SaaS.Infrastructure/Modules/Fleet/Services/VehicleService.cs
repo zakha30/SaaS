@@ -105,12 +105,12 @@ public sealed class VehicleService(
     };
 
         public async Task<Result<FleetImageResponseDto>> UploadImageAsync(
-            Guid fleetId, IFormFile file, string userId, CancellationToken ct = default)
+            Guid vehicleId, IFormFile file, Guid userId, CancellationToken ct = default)
         {
-            // Step 1: Validate fleet exists
-            var fleet = await vehicleRepository.GetByIdAsync(fleetId, ct);
-            if (fleet is null)
-                return Result<FleetImageResponseDto>.Failure($"Fleet (Vehicle) with ID {fleetId} not found.");
+            // Step 1: Validate vehicle exists
+            var vehicle = await vehicleRepository.GetByIdAsync(vehicleId, ct);
+            if (vehicle is null)
+                return Result<FleetImageResponseDto>.Failure($"Vehicle with ID {vehicleId} not found.");
 
             // Step 2: Validate file
             if (file is null || file.Length == 0)
@@ -128,38 +128,36 @@ public sealed class VehicleService(
                 // Step 3: Save file to disk
                 var uploadDir = Path.Combine(
                     Directory.GetCurrentDirectory(),
-                    "wwwroot", "uploads", "vehicles", fleetId.ToString());
+                    "wwwroot", "uploads", "vehicles", vehicleId.ToString());
 
                 Directory.CreateDirectory(uploadDir);
 
-                // Generate unique filename
                 var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
                 var fileName = $"{Guid.NewGuid()}{ext}";
                 var filePath = Path.Combine(uploadDir, fileName);
 
-                // Save file
                 await using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
                 {
                     await file.CopyToAsync(stream, ct);
                 }
 
                 // Step 4: Create database record
-                var publicUrl = $"/uploads/vehicles/{fleetId}/{fileName}";
+                var imagePath = $"/uploads/vehicles/{vehicleId}/{fileName}";  // ← ImagePath
 
                 var image = new FleetImage
                 {
-                    VehicleId = fleetId,
-                    ImageUrl = publicUrl,
+                    VehicleId = vehicleId,  // ← not FleetId
+                    ImagePath = imagePath,   // ← not ImageUrl
                     FileName = file.FileName,
                     FileSize = file.Length,
                     ContentType = file.ContentType,
-                    UploadedBy = userId
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = userId
                 };
 
                 await imageRepository.AddAsync(image, ct);
                 await imageRepository.SaveChangesAsync(ct);
 
-                // Step 5: Return response
                 return Result<FleetImageResponseDto>.Success(mapper.Map<FleetImageResponseDto>(image));
             }
             catch (Exception ex)
@@ -170,11 +168,11 @@ public sealed class VehicleService(
         }
 
         public async Task<Result<List<FleetImageResponseDto>>> GetFleetImagesAsync(
-            Guid fleetId, CancellationToken ct = default)
+            Guid vehicleId, CancellationToken ct = default)
         {
             try
             {
-                var images = await imageRepository.GetByFleetIdAsync(fleetId, ct);
+                var images = await imageRepository.GetByVehicleIdAsync(vehicleId, ct);  // ← renamed
                 var dtos = images.Select(mapper.Map<FleetImageResponseDto>).ToList();
                 return Result<List<FleetImageResponseDto>>.Success(dtos);
             }
@@ -186,7 +184,7 @@ public sealed class VehicleService(
         }
 
         public async Task<Result<string>> DeleteImageAsync(
-            int imageId, Guid userId, CancellationToken ct = default)
+            int imageId, Guid userId, CancellationToken ct = default)  // ← int imageId
         {
             try
             {
@@ -198,7 +196,7 @@ public sealed class VehicleService(
                 var filePath = Path.Combine(
                     Directory.GetCurrentDirectory(),
                     "wwwroot",
-                    image.ImageUrl.TrimStart('/'));
+                    image.ImagePath.TrimStart('/'));
 
                 if (File.Exists(filePath))
                     File.Delete(filePath);

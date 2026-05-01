@@ -89,9 +89,9 @@ public sealed class FleetImageRepository(AppDbContext db) : IFleetImageRepositor
     public async Task<FleetImage?> GetByIdAsync(int id, CancellationToken ct = default) =>
         await db.Set<FleetImage>().FirstOrDefaultAsync(x => x.Id == id, ct);
 
-    public async Task<List<FleetImage>> GetByFleetIdAsync(Guid fleetId, CancellationToken ct = default) =>
+    public async Task<List<FleetImage>> GetByVehicleIdAsync(Guid vehicleId, CancellationToken ct = default) =>  // ← renamed
         await BaseQuery
-            .Where(x => x.VehicleId == fleetId)
+            .Where(x => x.VehicleId == vehicleId)  // ← changed from FleetId
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(ct);
 

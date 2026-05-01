@@ -61,4 +61,19 @@ public static class VehicleStatus
     public const string Unavailable = "Unavailable";
 }
 
+public sealed class FleetImage : TenantEntity
+{
+    public int Id { get; set; }
+    public Guid VehicleId { get; set; }  // ← matches your column name
+    public Vehicle? Vehicle { get; set; } // Navigation property
+
+    public string ImagePath { get; set; } = string.Empty;  // ← matches your column
+    public string FileName { get; set; } = string.Empty;
+    public long FileSize { get; set; }
+    public string? ContentType { get; set; }
+    public DateTime? CreatedAt { get; set; }
+    public Guid? CreatedBy { get; set; }
+    // IsDeleted comes from TenantEntity
+}
+
 

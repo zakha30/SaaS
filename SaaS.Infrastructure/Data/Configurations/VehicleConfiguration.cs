@@ -62,7 +62,7 @@ public sealed class FleetImageConfiguration : IEntityTypeConfiguration<FleetImag
     {
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.ImageUrl)
+        builder.Property(x => x.ImagePath)
             .IsRequired()
             .HasMaxLength(1000);
 
@@ -77,7 +77,7 @@ public sealed class FleetImageConfiguration : IEntityTypeConfiguration<FleetImag
         builder.Property(x => x.FileSize)
             .IsRequired();
 
-        builder.Property(x => x.UploadedBy);
+        builder.Property(x => x.CreatedBy);
 
         // Foreign key to Vehicle
         builder.HasOne(x => x.Vehicle)

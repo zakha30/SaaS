@@ -175,27 +175,11 @@ public sealed record VehicleFilterDto
     public int PageSize { get; init; } = 20;
 }
 
-public class FleetImage
-{
-    public int Id { get; set; }
-    public Guid VehicleId { get; set; }
-    public Vehicle Vehicle { get; set; }
-    public string ImageUrl { get; set; }
-    public string FileName { get; set; }
-    public long FileSize { get; set; }
-    public string ContentType { get; set; }
-    public DateTime UploadedAt { get; set; }
-    public string CreatedBy { get; set; }
-
-    public string UploadedBy { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public bool IsDeleted { get; set; } = false;
-}
 
 public sealed class CreateFleetImageDto
 {
-    [Required(ErrorMessage = "Fleet ID is required")]
-    public Guid FleetId { get; set; }
+    [Required(ErrorMessage = "Vehicle ID is required")]
+    public Guid VehicleId { get; set; }  // ← matches table
 
     [Required(ErrorMessage = "File is required")]
     public IFormFile File { get; set; } = null!;
@@ -203,26 +187,26 @@ public sealed class CreateFleetImageDto
 
 public sealed class FleetImageResponseDto
 {
-    public Guid Id { get; set; }
-    public Guid FleetId { get; set; }
-    public string ImageUrl { get; set; } = string.Empty;
+    public int Id { get; set; }  // ← int (your table uses IDENTITY)
+    public Guid VehicleId { get; set; }
+    public string ImagePath { get; set; } = string.Empty;  // ← matches table
     public string FileName { get; set; } = string.Empty;
     public long FileSize { get; set; }
-    public string ContentType { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; }
-    public string UploadedBy { get; set; } = string.Empty;
-    public DateTime UploadedAt { get; set; }
-    public string CreatedBy { get; set; } = string.Empty;
+    public string? ContentType { get; set; }
+    public DateTime? UploadedAt { get; set; }
+    public Guid? CreatedBy { get; set; }
+    public DateTime CreatedAt { get; set; }  // from TenantEntity
+    public Guid TenantId { get; set; }
 }
 
 public sealed class DeleteFleetImageDto
 {
     [Required]
-    public Guid ImageId { get; set; }
+    public int ImageId { get; set; }  // ← int, not Guid
 }
 
-public class UploadFleetImageRequest
+public sealed class UploadFleetImageRequest
 {
-    public Guid FleetId { get; set; }
-    public IFormFile File { get; set; }
+    public Guid VehicleId { get; set; }  // ← matches
+    public IFormFile File { get; set; } = null!;
 }

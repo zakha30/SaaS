@@ -64,59 +64,53 @@ public sealed class VehiclesController : ControllerBase
         return res.IsSuccess ? Ok(res.Value) : BadRequest(res.Error);
     }
 
-    
+
     /// <summary>
     /// Upload an image for a fleet (vehicle)
     /// </summary>
-    /// <param name="fleetId">The Fleet/Vehicle ID</param>
-    /// <param name="file">The image file (JPG, PNG, WEBP, GIF - max 5MB)</param>
-    /// <param name="ct">Cancellation token</param>
-    
-
-    [HttpPost("images")]
+    [HttpPost("{vehicleId}/images")]  // ← renamed parameter
     [Authorize]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UploadImage(
-    [FromForm] UploadFleetImageRequest request,
-    CancellationToken ct)
+    public async Task<IActionResult> UploadFleetImage(
+        Guid vehicleId,  // ← renamed
+        [FromForm] IFormFile file,
+        CancellationToken ct)
     {
-        if (request.File is null || request.File.Length == 0)
+        if (file is null || file.Length == 0)
             return BadRequest(new { error = "No file provided." });
 
-        var userId = User.Identity?.Name ?? string.Empty;
+        if (file.Length > 5 * 1024 * 1024)
+            return BadRequest(new { error = "File exceeds 5MB limit." });
 
-        var res = await _imageService.UploadImageAsync(
-            request.FleetId,
-            request.File,
-            userId,
-            ct);
+        var allowed = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
+        if (!allowed.Contains(file.ContentType.ToLowerInvariant()))
+            return BadRequest(new { error = "Only JPG, PNG, WEBP, and GIF images are allowed." });
+
+        var userId = Guid.Parse(User.Identity?.Name ?? Guid.Empty.ToString());
+        var res = await _imageService.UploadImageAsync(vehicleId, file, userId, ct);  // ← pass vehicleId
 
         return res.IsSuccess
-            ? CreatedAtAction(nameof(GetFleetImages), new { fleetId = request.FleetId }, res.Value)
+            ? CreatedAtAction(nameof(GetFleetImages), new { vehicleId }, res.Value)  // ← updated
             : BadRequest(new { error = res.Error });
     }
 
     /// <summary>
-    /// Get all images for a fleet (vehicle)
+    /// Get all images for a vehicle
     /// </summary>
-    /// <param name="fleetId">The Fleet/Vehicle ID</param>
-    /// <param name="ct">Cancellation token</param>
-    [HttpGet("{fleetId}/images")]
+    [HttpGet("{vehicleId}/images")]  // ← renamed
     [AllowAnonymous]
-    public async Task<IActionResult> GetFleetImages(Guid fleetId, CancellationToken ct)
+    public async Task<IActionResult> GetFleetImages(Guid vehicleId, CancellationToken ct)  // ← renamed
     {
-        var res = await _imageService.GetFleetImagesAsync(fleetId, ct);
+        var res = await _imageService.GetFleetImagesAsync(vehicleId, ct);
         return res.IsSuccess ? Ok(res.Value) : BadRequest(new { error = res.Error });
     }
 
     /// <summary>
     /// Delete a specific image
     /// </summary>
-    /// <param name="imageId">The Image ID to delete</param>
-    /// <param name="ct">Cancellation token</param>
     [HttpDelete("images/{imageId}")]
     [Authorize]
-    public async Task<IActionResult> DeleteImage(int imageId, CancellationToken ct)
+    public async Task<IActionResult> DeleteImage(int imageId, CancellationToken ct)  // ← int instead of Guid
     {
         var userId = Guid.Parse(User.Identity?.Name ?? Guid.Empty.ToString());
         var res = await _imageService.DeleteImageAsync(imageId, userId, ct);
