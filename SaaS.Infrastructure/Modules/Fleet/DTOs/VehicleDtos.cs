@@ -182,6 +182,7 @@ public sealed class CreateFleetImageDto
     public Guid VehicleId { get; set; }  // ← matches table
 
     [Required(ErrorMessage = "File is required")]
+    [Microsoft.AspNetCore.Mvc.FromForm]
     public IFormFile File { get; set; } = null!;
 }
 

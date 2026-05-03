@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using SaaS.Api.Swagger;
 using SaaS.Infrastructure.Data;
@@ -123,6 +124,15 @@ builder.Services.AddSwaggerGen(opts =>
     });
 
     opts.OperationFilter<AuthorizeOperationFilter>();
+    opts.OperationFilter<SaaS.API.Swagger.FileUploadOperationFilter>();
+    // Tell Swashbuckle how to represent IFormFile in the OpenAPI schema.
+    // Without this, SwaggerGen crashes when it encounters [FromForm] IFormFile
+    // before any operation filter gets a chance to run.
+    opts.MapType<IFormFile>(() => new Microsoft.OpenApi.Models.OpenApiSchema
+    {
+        Type = "string",
+        Format = "binary"
+    });
 });
 
 builder.Services.AddHealthChecks()
