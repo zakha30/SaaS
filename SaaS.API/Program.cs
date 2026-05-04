@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Models;
 using SaaS.Api.Swagger;
 using SaaS.Infrastructure.Data;
 using SaaS.Infrastructure.Extensions;
+using SaaS.Modules.Loads.Entities;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -100,6 +101,9 @@ builder.Services.AddControllers()
 .AddApplicationPart(typeof(SaaS.Modules.Directory.Controllers.DirectoryController).Assembly)
 .AddApplicationPart(typeof(SaaS.Modules.Classifieds.Controllers.ClassifiedsController).Assembly)
 .AddApplicationPart(typeof(SaaS.Modules.Jobs.Controllers.JobsController).Assembly)
+.AddApplicationPart(typeof(SaaS.Modules.Drivers.Controllers.DriversController).Assembly)
+
+
 .AddApplicationPart(typeof(SaaS.Modules.Forum.Controllers.ForumController).Assembly);
 
 builder.Services.AddEndpointsApiExplorer();

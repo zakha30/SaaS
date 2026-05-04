@@ -4,8 +4,10 @@ using SaaS.Infrastructure.Modules.Fleet.Entities;
 using SaaS.Infrastructure.Services;
 using SaaS.Modules.Auth.Entities;
 using SaaS.Modules.Classifieds.Entities;
+using SaaS.Modules.Cms.Entities;
 using SaaS.Modules.Directory.Entities;
 using SaaS.Modules.Forum.Entities;
+using SaaS.Modules.HomePage.Entities;
 using SaaS.Modules.Jobs.Entities;
 using SaaS.Modules.Listings.Entities;
 // New module entity namespaces
@@ -19,7 +21,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
+using System.Web.WebPages.Razor.Configuration;
 namespace SaaS.Infrastructure.Data;
 
 public sealed class AppDbContext(
@@ -55,6 +57,12 @@ public sealed class AppDbContext(
     public DbSet<ForumThread> ForumThreads => Set<ForumThread>();
     public DbSet<ForumPost> ForumPosts => Set<ForumPost>();
     public DbSet<FleetImage> FleetImages => Set<FleetImage>();
+
+    // CMS
+    public DbSet<HomePageContent> HomePageContents => Set<HomePageContent>();
+    public DbSet<HomeSection> HomeSections => Set<HomeSection>();
+    public DbSet<HomeBlogPost> HomeBlogPosts
+    public DbSet<HomePageSection> HomePageSections { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Apply all IEntityTypeConfiguration<T> classes in this assembly
@@ -144,6 +152,18 @@ public sealed class AppDbContext(
         modelBuilder.Entity<ForumPost>()
             .HasQueryFilter(p => !p.IsDeleted);
         modelBuilder.Entity<FleetImage>().HasQueryFilter(x => !x.IsDeleted);
+
+        modelBuilder.Entity<HomePageContent>()
+    .HasQueryFilter(x => !x.IsDeleted &&
+        (!tenantService.IsResolved || x.TenantId == tenantService.CurrentTenantId));
+        modelBuilder.Entity<HomeSection>()
+            .HasQueryFilter(x => !x.IsDeleted &&
+                (!tenantService.IsResolved || x.TenantId == tenantService.CurrentTenantId));
+        modelBuilder.Entity<HomeBlogPost>()
+            .HasQueryFilter(x => !x.IsDeleted &&
+                (!tenantService.IsResolved || x.TenantId == tenantService.CurrentTenantId));
+
+
         base.OnModelCreating(modelBuilder);
     }
 

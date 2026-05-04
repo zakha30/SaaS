@@ -24,9 +24,12 @@
   <Project Path="SaaS.IntegrationTests/SaaS.IntegrationTests.csproj" />
   <Project Path="SaaS.Modules.Auth/SaaS.Modules.Auth.csproj" />
   <Project Path="SaaS.Modules.Classifieds/SaaS.Modules.Classifieds.csproj" />
+  <Project Path="SaaS.Modules.Cms/SaaS.Modules.Cms.csproj" Id="ad1dd349-5131-48d6-b050-e60fc7f688e9" />
   <Project Path="SaaS.Modules.Dashboard/SaaS.Modules.Dashboard.csproj" />
   <Project Path="SaaS.Modules.Directory/SaaS.Modules.Directory.csproj" />
+  <Project Path="SaaS.Modules.Drivers/SaaS.Modules.Drivers.csproj" Id="7e117bcd-742b-4443-a0ac-8f0b56faa815" />
   <Project Path="SaaS.Modules.Forum/SaaS.Modules.Forum.csproj" />
+  <Project Path="SaaS.Modules.HomePage/SaaS.Modules.HomePage.csproj" Id="01937df8-5844-41d9-9d25-e971c5e68c1f" />
   <Project Path="SaaS.Modules.Jobs/SaaS.Modules.Jobs.csproj" />
   <Project Path="SaaS.Modules.Listings/SaaS.Modules.Listings.csproj" />
   <Project Path="SaaS.Modules.Loads/SaaS.Modules.Loads.csproj" />

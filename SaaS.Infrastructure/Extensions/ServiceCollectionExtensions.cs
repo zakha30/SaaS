@@ -21,9 +21,12 @@ using SaaS.Modules.Dashboard.Services;
 using SaaS.Modules.Directory.Mappings;
 using SaaS.Modules.Directory.Repositories;
 using SaaS.Modules.Directory.Services;
+using SaaS.Modules.Drivers.Repositories;
+using SaaS.Modules.Drivers.Services;
 using SaaS.Modules.Forum.Mappings;
 using SaaS.Modules.Forum.Repositories;
 using SaaS.Modules.Forum.Services;
+using SaaS.Modules.HomePage;
 using SaaS.Modules.Jobs.Mappings;
 using SaaS.Modules.Jobs.Repositories;
 using SaaS.Modules.Jobs.Services;
@@ -138,7 +141,9 @@ public static class ServiceCollectionExtensions
             cfg.AddProfile<SaaS.Modules.Directory.Mappings.DirectoryProfile>();
             cfg.AddProfile<SaaS.Modules.Classifieds.Mappings.ClassifiedProfile>();
             cfg.AddProfile<SaaS.Modules.Jobs.Mappings.JobProfile>();
+            cfg.AddProfile<SaaS.Modules.Drivers.Mappings.DriverProfile>();
             cfg.AddProfile<SaaS.Modules.Forum.Mappings.ForumProfile>();
+
         });
 
         // Core modules
@@ -205,6 +210,14 @@ public static class ServiceCollectionExtensions
         // Fleet Image Services
         services.AddScoped<IFleetImageRepository, FleetImageRepository>();
         services.AddScoped<IFleetImageService, FleetImageService>();
+
+        services.AddScoped<IDriverRepository,
+                      DriverRepository>();
+        services.AddScoped<IDriverService,
+                           DriverService>();
+        services.AddScoped<IHomePageRepository, HomePageRepository>();
+        services.AddScoped<HomePageService>();
+        services.AddScoped<IHomeContentService, HomeContentService>();
 
         return services;
     }

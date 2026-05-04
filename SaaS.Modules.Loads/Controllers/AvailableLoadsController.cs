@@ -7,7 +7,7 @@ using SaaS.Modules.Loads.Services;
 namespace SaaS.Modules.Loads.Controllers;
 
 [ApiController]
-[Route("api/loads")]
+[Route("api/Available-Loads")]
 public sealed class AvailableLoadsController : ControllerBase
 {
     private readonly IAvailableLoadService service;
