@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SaaS.Modules.Cms.Dtos;
 using SaaS.Modules.Cms.Services;
+using SaaS.Modules.Tenants.Http;
+using SaaS.Modules.Tenants.Repositories;
+using SaaS.Shared;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -15,7 +18,18 @@ namespace SaaS.Modules.Cms.Controller
     public sealed class HomeContentController : ControllerBase
     {
         private readonly IHomeContentService _service;
-        public HomeContentController(IHomeContentService service) => _service = service;
+        private readonly ITenantContext _tenant;
+        private readonly ITenantRepository _tenants;
+
+        public HomeContentController(
+            IHomeContentService service,
+            ITenantContext tenant,
+            ITenantRepository tenants)
+        {
+            _service = service;
+            _tenant = tenant;
+            _tenants = tenants;
+        }
 
         // ── Public: frontend reads content ────────────────────────────────────────
 
@@ -25,8 +39,14 @@ namespace SaaS.Modules.Cms.Controller
         [ProducesResponseType(typeof(HomePageContentDto), 200)]
         public async Task<IActionResult> Get(
             [FromQuery] string locale = "en",
+            [FromQuery] string? tenantSlug = null,
             CancellationToken ct = default)
         {
+            var tenantErr = await PublicTenantResolver.TryResolveForPublicDataAsync(
+                this, _tenant, _tenants, tenantSlug, ct);
+            if (tenantErr is not null)
+                return tenantErr;
+
             var res = await _service.GetAsync(locale, ct);
             return res.IsSuccess ? Ok(res.Value) : NotFound(new { error = res.Error });
         }

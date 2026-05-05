@@ -8,5 +8,6 @@ namespace SaaS.Modules.Classifieds.Services;
 public interface IClassifiedService
 {
     Task<PagedResult<ClassifiedResponseDto>> GetFilteredAsync(ClassifiedFilterDto filter, CancellationToken ct = default);
+    Task<ClassifiedResponseDto?> GetByIdAsync(System.Guid id, CancellationToken ct = default);
     Task<ClassifiedResponseDto> CreateAsync(CreateClassifiedDto dto, CancellationToken ct = default);
 }

@@ -128,8 +128,17 @@ public static class ServiceCollectionExtensions
 
         services.AddAuthorization(opts =>
         {
-            opts.AddPolicy("AdminOnly",      p => p.RequireRole(UserRoles.Admin, UserRoles.SuperAdmin));
+            opts.AddPolicy("AdminOnly", p => p.RequireRole(UserRoles.Admin, UserRoles.SuperAdmin));
             opts.AddPolicy("SuperAdminOnly", p => p.RequireRole(UserRoles.SuperAdmin));
+
+            opts.AddPolicy("ShipperOrAdmin",
+                p => p.RequireRole(UserRoles.Shipper, UserRoles.Admin, UserRoles.SuperAdmin));
+            opts.AddPolicy("TransporterOrAdmin",
+                p => p.RequireRole(UserRoles.Transporter, UserRoles.Admin, UserRoles.SuperAdmin));
+            opts.AddPolicy("FleetOwnerOrAdmin",
+                p => p.RequireRole(UserRoles.FleetOwner, UserRoles.Admin, UserRoles.SuperAdmin));
+            opts.AddPolicy("DriverOrAdmin",
+                p => p.RequireRole(UserRoles.Driver, UserRoles.Admin, UserRoles.SuperAdmin));
         });
 
         services.AddAutoMapper(cfg =>

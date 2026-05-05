@@ -10,17 +10,21 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxTokenParser;
 
 namespace SaaS.Infrastructure.Modules.Fleet.Services;
 
 public sealed class VehicleService(
     IVehicleRepository repository,
-    IMapper mapper) : IVehicleService
+    IMapper mapper,
+    ITenantContext tenantContext) : IVehicleService
 {
     public async Task<Result<VehicleResponseDto>> CreateAsync(CreateVehicleDto dto, Guid userId, CancellationToken ct = default)
     {
+        if (!tenantContext.IsResolved)
+            return Result<VehicleResponseDto>.Failure("Tenant context could not be resolved.");
+
         var vehicle = mapper.Map<Vehicle>(dto);
+        vehicle.TenantId = tenantContext.TenantId;
         await repository.AddAsync(vehicle, ct);
         await repository.SaveChangesAsync(ct);
         return Result<VehicleResponseDto>.Success(mapper.Map<VehicleResponseDto>(vehicle));
@@ -42,8 +46,27 @@ public sealed class VehicleService(
 
     public async Task<Result<VehicleResponseDto>> UpdateAsync(Guid id, UpdateVehicleDto dto, Guid requestingUserId, CancellationToken ct = default)
     {
-        var v = await repository.GetByIdAsync(id, ct);
-        if (v is null) return Result<VehicleResponseDto>.Failure("Vehicle not found.");
+        if (!tenantContext.IsResolved)
+            return Result<VehicleResponseDto>.Failure("Tenant context could not be resolved.");
+
+        var v = await repository.GetByIdForMutationAsync(id, ct);
+        if (v is null)
+            return Result<VehicleResponseDto>.Failure("Vehicle not found.");
+
+        // Tenant guard + repair:
+        // - Orphan rows (TenantId empty): assign current tenant.
+        // - Wrong tenant but same poster (PostedByUserId): reclaim — fixes legacy/migrated rows.
+        // - Otherwise: deny (hide cross-tenant assets).
+        if (v.TenantId != Guid.Empty && v.TenantId != tenantContext.TenantId)
+        {
+            if (v.PostedByUserId != requestingUserId)
+                return Result<VehicleResponseDto>.Failure("Vehicle not found.");
+            v.TenantId = tenantContext.TenantId;
+        }
+        else if (v.TenantId == Guid.Empty)
+        {
+            v.TenantId = tenantContext.TenantId;
+        }
 
         mapper.Map(dto, v);
         await repository.SaveChangesAsync(ct);
@@ -93,7 +116,8 @@ public sealed class VehicleService(
     public sealed class FleetImageService(
     IFleetImageRepository imageRepository,
     IVehicleRepository vehicleRepository,
-    IMapper mapper) : IFleetImageService
+    IMapper mapper,
+    ITenantContext tenantContext) : IFleetImageService
     {
         private const long MaxFileSizeBytes = 5 * 1024 * 1024; // 5 MB
         private static readonly string[] AllowedContentTypes =
@@ -107,10 +131,24 @@ public sealed class VehicleService(
         public async Task<Result<FleetImageResponseDto>> UploadImageAsync(
             Guid vehicleId, IFormFile file, Guid userId, CancellationToken ct = default)
         {
-            // Step 1: Validate vehicle exists
-            var vehicle = await vehicleRepository.GetByIdAsync(vehicleId, ct);
+            // Step 1: Validate vehicle exists (bypass tenant filter; enforce tenant below)
+            if (!tenantContext.IsResolved)
+                return Result<FleetImageResponseDto>.Failure("Tenant context could not be resolved.");
+
+            var vehicle = await vehicleRepository.GetByIdForMutationAsync(vehicleId, ct);
             if (vehicle is null)
                 return Result<FleetImageResponseDto>.Failure($"Vehicle with ID {vehicleId} not found.");
+
+            if (vehicle.TenantId != Guid.Empty && vehicle.TenantId != tenantContext.TenantId)
+            {
+                if (vehicle.PostedByUserId != userId)
+                    return Result<FleetImageResponseDto>.Failure($"Vehicle with ID {vehicleId} not found.");
+                vehicle.TenantId = tenantContext.TenantId;
+            }
+            else if (vehicle.TenantId == Guid.Empty)
+            {
+                vehicle.TenantId = tenantContext.TenantId;
+            }
 
             // Step 2: Validate file
             if (file is null || file.Length == 0)

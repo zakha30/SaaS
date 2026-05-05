@@ -7,5 +7,5 @@ namespace SaaS.Modules.Loads.Services;
 public interface IQuoteRequestService
 {
     Task<QuoteRequestResponseDto> CreateAsync(CreateQuoteRequestDto dto, CancellationToken ct = default);
-    Task SubmitQuoteAsync(QuoteSubmissionDto dto, CancellationToken ct = default);
+    Task SubmitQuoteAsync(QuoteSubmissionDto dto, Guid submittedByUserId, CancellationToken ct = default);
 }

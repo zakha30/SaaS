@@ -30,9 +30,10 @@ public sealed class QuoteRequestService : IQuoteRequestService
         return mapper.Map<QuoteRequestResponseDto>(entity);
     }
 
-    public async Task SubmitQuoteAsync(QuoteSubmissionDto dto, CancellationToken ct = default)
+    public async Task SubmitQuoteAsync(QuoteSubmissionDto dto, Guid submittedByUserId, CancellationToken ct = default)
     {
         var entity = mapper.Map<QuoteSubmission>(dto);
+        entity.SubmittedByUserId = submittedByUserId;
         entity.Status = "Pending";
         await submissionRepo.AddAsync(entity, ct);
         await submissionRepo.SaveChangesAsync(ct);

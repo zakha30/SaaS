@@ -44,6 +44,7 @@ public sealed class JobResponseDto
     public string Currency { get; set; } = "ZAR";
     public string Status { get; set; } = "Active";
     public string MembershipTier { get; set; } = "Free";
+    public DateTime CreatedAt { get; set; }
     public DateTime ExpiresAt { get; set; }
 }
 

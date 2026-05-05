@@ -27,6 +27,12 @@ public sealed class ClassifiedService : IClassifiedService
         return new PagedResult<ClassifiedResponseDto>(dtos, paged.TotalCount, paged.Page, paged.PageSize);
     }
 
+    public async Task<ClassifiedResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        var entity = await repo.GetByIdAsync(id, ct);
+        return entity is null ? null : mapper.Map<ClassifiedResponseDto>(entity);
+    }
+
     public async Task<ClassifiedResponseDto> CreateAsync(CreateClassifiedDto dto, CancellationToken ct = default)
     {
         var entity = mapper.Map<Entities.ClassifiedItem>(dto);

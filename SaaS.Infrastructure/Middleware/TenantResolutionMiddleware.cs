@@ -49,7 +49,19 @@ public sealed class TenantResolutionMiddleware(
             return;
         }
 
-        // ⭐ NEW: Check AllowAnonymous
+        // Authenticated users: always attach tenant from JWT (even on [AllowAnonymous] endpoints)
+        // so CMS + listings respect the logged-in tenant without requiring ?tenantSlug=.
+        if (context.User.Identity?.IsAuthenticated == true)
+        {
+            var jwtTenant = context.User.FindFirst("tenant_id");
+            if (jwtTenant != null &&
+                Guid.TryParse(jwtTenant.Value, out var tid) &&
+                tid != Guid.Empty)
+            {
+                tenantService.SetTenant(tid);
+            }
+        }
+
         var endpoint = context.GetEndpoint();
         var allowAnonymous = endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null;
 
@@ -59,27 +71,21 @@ public sealed class TenantResolutionMiddleware(
             return;
         }
 
-        // Attempt to resolve tenant from JWT claim
-        var claim = context.User.FindFirst("tenant_id");
-
-        if (claim is null ||
-            !Guid.TryParse(claim.Value, out var tenantId) ||
-            tenantId == Guid.Empty)
+        // Protected endpoints require a resolved tenant (anonymous requests must use tenantSlug in-controller).
+        if (!tenantService.IsResolved)
         {
             logger.LogWarning(
-                "Request to {Path} is missing a valid 'tenant_id' claim.", path);
+                "Request to {Path} has no tenant context (login required or tenantSlug for public routes).", path);
 
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsync(
-                "{\"error\":\"Tenant could not be resolved from the provided token.\"}");
+                "{\"error\":\"Tenant could not be resolved. Sign in or pass tenantSlug for public content.\"}");
             return;
         }
 
-        tenantService.SetTenant(tenantId);
-
         logger.LogDebug(
-            "Tenant resolved: {TenantId} for {Path}", tenantId, path);
+            "Tenant resolved: {TenantId} for {Path}", tenantService.CurrentTenantId, path);
 
         await next(context);
     }

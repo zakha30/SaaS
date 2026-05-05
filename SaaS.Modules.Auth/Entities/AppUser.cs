@@ -34,13 +34,34 @@ public sealed class RefreshToken : TenantEntity
 
 public static class UserRoles
 {
+    /// <summary>Platform operator — not assignable by tenant admins.</summary>
     public const string SuperAdmin = "SuperAdmin";
+
+    /// <summary>Tenant administrator — full access within the tenant.</summary>
     public const string Admin = "Admin";
+
+    /// <summary>Legacy / generic member.</summary>
     public const string User = "User";
 
+    public const string Shipper = "Shipper";
+    public const string Transporter = "Transporter";
+    public const string FleetOwner = "FleetOwner";
+    public const string Driver = "Driver";
+
     public static readonly IReadOnlyList<string> All =
-        [SuperAdmin, Admin, User];
+        [SuperAdmin, Admin, User, Shipper, Transporter, FleetOwner, Driver];
+
+    /// <summary>Roles a tenant Admin may assign when inviting users (excludes SuperAdmin).</summary>
+    public static readonly IReadOnlyList<string> AssignableByTenantAdmin =
+        [Admin, User, Shipper, Transporter, FleetOwner, Driver];
 
     public static bool IsValid(string role) =>
         All.Contains(role, StringComparer.OrdinalIgnoreCase);
+
+    public static bool CanTenantAdminAssign(string role) =>
+        AssignableByTenantAdmin.Contains(role, StringComparer.OrdinalIgnoreCase);
+
+    public static bool IsTenantAdmin(string role) =>
+        string.Equals(role, Admin, StringComparison.OrdinalIgnoreCase)
+        || string.Equals(role, SuperAdmin, StringComparison.OrdinalIgnoreCase);
 }

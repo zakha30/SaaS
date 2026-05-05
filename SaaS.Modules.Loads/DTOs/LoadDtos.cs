@@ -6,8 +6,6 @@ namespace SaaS.Modules.Loads.DTOs;
 
 public sealed class CreateLoadDto
 {
-    public Guid? PostedByUserId { get; set; }
-
     [Required]
     [MaxLength(100)]
     public string DepartureProvince { get; set; } = string.Empty;
@@ -90,6 +88,10 @@ public sealed record LoadFilterDto
     public bool? IsCrossBorder { get; init; }
     public decimal? MinWeightKg { get; init; }
     public string? Status { get; init; }
+    /// <summary>Case-insensitive partial match on commodity text.</summary>
+    public string? Commodity { get; init; }
+    /// <summary>Partial match on weight bracket (e.g. t, ton).</summary>
+    public string? WeightBracket { get; init; }
     public int Page { get; init; } = 1;
     public int PageSize { get; init; } = 20;
 }

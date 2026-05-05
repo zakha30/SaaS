@@ -9,8 +9,17 @@ using SaaS.Infrastructure.Data;
 using SaaS.Infrastructure.Extensions;
 using SaaS.Modules.Loads.Entities;
 using System.Threading.RateLimiting;
+using NLog;
+using NLog.Web;
 
+try
+{
 var builder = WebApplication.CreateBuilder(args);
+
+// NLog: logging provider + rules come from nlog.config (copied to output). Flush on shutdown in finally.
+builder.Logging.ClearProviders();
+builder.Logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
+builder.Host.UseNLog();
 
 // ── 1. Forwarded Headers ──────────────────────────────────────────────────────
 // Must be configured before everything else.
@@ -151,6 +160,11 @@ builder.Services.AddControllers()
 // ── Pipeline ──────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
+LogManager.GetLogger("SaaS.API").Info(
+    "API host starting | Environment={0} | ContentRoot={1}",
+    app.Environment.EnvironmentName,
+    app.Environment.ContentRootPath);
+
 // Order matters — every middleware comment explains why it sits here.
 
 // 1. Forwarded headers — must be absolute first so the correct scheme/IP
@@ -214,5 +228,15 @@ app.MapControllers();
 app.MapHealthChecks("/health", new HealthCheckOptions { AllowCachingResponses = false });
 
 await app.RunAsync();
+}
+catch (Exception ex)
+{
+    LogManager.GetCurrentClassLogger().Error(ex, "Application stopped due to an exception.");
+    throw;
+}
+finally
+{
+    LogManager.Shutdown();
+}
 
 public partial class Program { }

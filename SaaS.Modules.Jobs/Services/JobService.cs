@@ -27,6 +27,12 @@ public sealed class JobService : IJobService
         return new PagedResult<JobResponseDto>(dtos, paged.TotalCount, paged.Page, paged.PageSize);
     }
 
+    public async Task<JobResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        var entity = await repo.GetByIdAsync(id, ct);
+        return entity is null ? null : mapper.Map<JobResponseDto>(entity);
+    }
+
     public async Task<JobResponseDto> CreateAsync(CreateJobDto dto, CancellationToken ct = default)
     {
         var entity = mapper.Map<Entities.JobListing>(dto);

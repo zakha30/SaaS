@@ -21,6 +21,7 @@ public sealed class QuotesController(IQuoteService service) : ControllerBase
     /// Transporter submits a quote (bid) on an active listing.
     /// </summary>
     [HttpPost]
+    [Authorize(Policy = "TransporterOrAdmin")]
     public async Task<IActionResult> Submit(
         [FromBody] SubmitQuoteDto dto, CancellationToken ct)
     {

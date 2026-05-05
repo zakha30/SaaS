@@ -18,6 +18,11 @@ public sealed class VehicleRepository(AppDbContext db) : IVehicleRepository
     public async Task<Vehicle?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
         await db.Set<Vehicle>().FirstOrDefaultAsync(v => v.Id == id, ct);
 
+    public async Task<Vehicle?> GetByIdForMutationAsync(Guid id, CancellationToken ct = default) =>
+        await db.Set<Vehicle>()
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(v => v.Id == id && !v.IsDeleted, ct);
+
     public async Task<PagedResult<Vehicle>> GetPagedAsync(int page, int pageSize, CancellationToken ct = default)
     {
         var query = BaseQuery.OrderByDescending(v => v.CreatedAt);

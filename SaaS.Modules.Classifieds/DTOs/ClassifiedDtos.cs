@@ -34,6 +34,7 @@ public sealed class ClassifiedResponseDto
     public Guid Id { get; set; }
     public Guid? PostedByUserId { get; set; }
     public string Title { get; set; } = string.Empty;
+    public string TradeKind { get; set; } = "Sell";
     public string Category { get; set; } = string.Empty;
     public string Province { get; set; } = string.Empty;
     public string? City { get; set; }
@@ -43,6 +44,7 @@ public sealed class ClassifiedResponseDto
     public string? ImageUrl { get; set; }
     public string Status { get; set; } = "Active";
     public string MembershipTier { get; set; } = "Free";
+    public DateTime CreatedAt { get; set; }
     public DateTime ExpiresAt { get; set; }
 }
 

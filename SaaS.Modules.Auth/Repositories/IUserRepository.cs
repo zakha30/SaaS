@@ -1,9 +1,12 @@
+using System.Collections.Generic;
 using SaaS.Modules.Auth.Entities;
 
 namespace SaaS.Modules.Auth.Repositories;
 
 public interface IUserRepository
 {
+    Task<IReadOnlyList<AppUser>> GetAllInTenantAsync(CancellationToken ct = default);
+
     Task<AppUser?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<AppUser?> GetByEmailAndTenantAsync(string email, Guid tenantId, CancellationToken ct = default);
     Task<bool> EmailExistsInTenantAsync(string email, Guid tenantId, CancellationToken ct = default);

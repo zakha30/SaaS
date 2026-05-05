@@ -8,5 +8,6 @@ namespace SaaS.Modules.Forum.Services;
 public interface IThreadService
 {
     Task<PagedResult<ThreadResponseDto>> GetFilteredAsync(ThreadFilterDto filter, CancellationToken ct = default);
+    Task<ThreadResponseDto?> GetByIdAsync(System.Guid id, CancellationToken ct = default);
     Task<ThreadResponseDto> CreateAsync(CreateThreadDto dto, CancellationToken ct = default);
 }

@@ -19,6 +19,16 @@ namespace SaaS.Infrastructure.Repositories
     public sealed class HomeContentService(AppDbContext db) : IHomeContentService
     {
         private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
+        private static readonly string[] DefaultSectionKeys =
+        [
+            "fleet",
+            "drivers",
+            "loads",
+            "classifieds",
+            "jobs",
+            "forum",
+            "directory",
+        ];
 
         // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -33,6 +43,89 @@ namespace SaaS.Infrastructure.Repositories
                 : JsonSerializer.Deserialize<List<StatItemDto>>(json, _json) ?? new();
 
         private static List<StatItemDto> ParseTrust(string? json) => ParseStats(json);
+
+        private static string SerializeStats(List<StatItemDto> stats) =>
+            JsonSerializer.Serialize(stats);
+
+        private static HomePageContent CreateDefaultContent(string locale)
+        {
+            var content = new HomePageContent
+            {
+                Locale = locale,
+                HeroBadge = locale == "ar" ? "منصة نقل متعددة المستأجرين" : "Multi-tenant Transport Platform",
+                HeroTitle = locale == "ar" ? "مرحباً بك في ترانس هاب" : "Welcome to TransHub",
+                HeroSubtitle = locale == "ar"
+                    ? "قم بإدارة الأساطيل والحمولات والشراكات في مساحة عمل واحدة."
+                    : "Manage fleets, loads, and partner collaboration in one workspace.",
+                WelcomeTitle = locale == "ar" ? "ابدأ بمحتوى صفحتك الرئيسية" : "Start with your homepage content",
+                WelcomeSubtitle = locale == "ar"
+                    ? "يمكنك تعديل جميع الأقسام من محرر الصفحة الرئيسية."
+                    : "You can customize every section from the Home Page Editor.",
+                BlogHeading = locale == "ar" ? "آخر الأخبار" : "Latest Insights",
+                BlogSubheading = locale == "ar" ? "أخبار ومقالات فريقك" : "Updates and stories from your team",
+                TrustBarJson = SerializeStats(
+                [
+                    new() { Label = locale == "ar" ? "شركات نشطة" : "Active Companies", Value = "120+" },
+                    new() { Label = locale == "ar" ? "حمولات منشورة" : "Published Loads", Value = "8,500+" },
+                    new() { Label = locale == "ar" ? "سائقون موثقون" : "Verified Drivers", Value = "3,200+" },
+                    new() { Label = locale == "ar" ? "تغطية المناطق" : "Coverage Regions", Value = "24" },
+                ]),
+            };
+
+            content.Sections = DefaultSectionKeys
+                .Select((key, idx) => new HomeSection
+                {
+                    SectionKey = key,
+                    Title = locale == "ar" ? key : key[..1].ToUpper() + key[1..],
+                    Description = locale == "ar"
+                        ? "قم بتعديل هذا القسم من محرر الصفحة الرئيسية."
+                        : "Customize this section from the Home Page Editor.",
+                    SortOrder = idx + 1,
+                    IsVisible = true,
+                    StatsJson = SerializeStats(
+                    [
+                        new() { Label = locale == "ar" ? "إحصائية" : "Metric", Value = "24" },
+                        new() { Label = locale == "ar" ? "إحصائية" : "Metric", Value = "12" },
+                        new() { Label = locale == "ar" ? "إحصائية" : "Metric", Value = "8" },
+                    ]),
+                })
+                .ToList();
+
+            return content;
+        }
+
+        private static void EnsureDefaultCollections(HomePageContent content)
+        {
+            if (string.IsNullOrWhiteSpace(content.TrustBarJson))
+            {
+                content.TrustBarJson = SerializeStats(
+                [
+                    new() { Label = "Active Companies", Value = "120+" },
+                    new() { Label = "Published Loads", Value = "8,500+" },
+                    new() { Label = "Verified Drivers", Value = "3,200+" },
+                    new() { Label = "Coverage Regions", Value = "24" },
+                ]);
+            }
+
+            if (content.Sections.Count > 0) return;
+
+            content.Sections = DefaultSectionKeys
+                .Select((key, idx) => new HomeSection
+                {
+                    SectionKey = key,
+                    Title = key[..1].ToUpper() + key[1..],
+                    Description = "Customize this section from the Home Page Editor.",
+                    SortOrder = idx + 1,
+                    IsVisible = true,
+                    StatsJson = SerializeStats(
+                    [
+                        new() { Label = "Metric", Value = "24" },
+                        new() { Label = "Metric", Value = "12" },
+                        new() { Label = "Metric", Value = "8" },
+                    ]),
+                })
+                .ToList();
+        }
 
         private static HomePageContentDto MapDto(HomePageContent c) => new()
         {
@@ -105,8 +198,10 @@ namespace SaaS.Infrastructure.Repositories
 
         public async Task<Result<HomePageContentDto>> GetAsync(string locale = "en", CancellationToken ct = default)
         {
+            var normalizedLocale = string.IsNullOrWhiteSpace(locale) ? "en" : locale.Trim().ToLowerInvariant();
+
             var content = await ContentQuery
-                .FirstOrDefaultAsync(c => c.Locale == locale && !c.IsDeleted, ct);
+                .FirstOrDefaultAsync(c => c.Locale == normalizedLocale && !c.IsDeleted, ct);
 
             if (content is null)
             {
@@ -115,9 +210,23 @@ namespace SaaS.Infrastructure.Repositories
                     .FirstOrDefaultAsync(c => c.Locale == "en" && !c.IsDeleted, ct);
             }
 
-            return content is null
-                ? Result<HomePageContentDto>.Failure("Home content not found. Run the DB seed script.")
-                : Result<HomePageContentDto>.Success(MapDto(content));
+            if (content is null)
+            {
+                // Self-heal missing CMS rows (seed-less tenant/local setup).
+                var created = CreateDefaultContent(normalizedLocale);
+                db.Set<HomePageContent>().Add(created);
+                await db.SaveChangesAsync(ct);
+                return Result<HomePageContentDto>.Success(MapDto(created));
+            }
+
+            var hadMissingDefaults = content.Sections.Count == 0 || string.IsNullOrWhiteSpace(content.TrustBarJson);
+            if (hadMissingDefaults)
+            {
+                EnsureDefaultCollections(content);
+                await db.SaveChangesAsync(ct);
+            }
+
+            return Result<HomePageContentDto>.Success(MapDto(content));
         }
 
         public async Task<Result<HomePageContentDto>> UpsertAsync(

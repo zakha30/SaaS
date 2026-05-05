@@ -27,9 +27,10 @@ public sealed class AvailableLoadService : IAvailableLoadService
         return new PagedResult<LoadResponseDto>(dtos, paged.TotalCount, paged.Page, paged.PageSize);
     }
 
-    public async Task<LoadResponseDto> CreateAsync(CreateLoadDto dto, CancellationToken ct = default)
+    public async Task<LoadResponseDto> CreateAsync(CreateLoadDto dto, Guid postedByUserId, CancellationToken ct = default)
     {
         var entity = mapper.Map<Entities.AvailableLoad>(dto);
+        entity.PostedByUserId = postedByUserId;
         entity.MembershipTier ??= "Free";
         entity.Status = "Active";
         entity.ExpiresAt = DateTime.UtcNow.AddDays(30);

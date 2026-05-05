@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SaaS.Infrastructure.Modules.Fleet.DTOs;
 using SaaS.Infrastructure.Modules.Fleet.Services;
+using SaaS.Modules.Tenants.Http;
+using SaaS.Modules.Tenants.Repositories;
 using SaaS.Shared;
 using System;
 using System.Threading;
@@ -16,17 +18,25 @@ public sealed class VehiclesController : ControllerBase
 {
     private readonly IVehicleService _service;
     private readonly IFleetImageService _imageService;
+    private readonly ITenantContext _tenantContext;
+    private readonly ITenantRepository _tenantRepository;
 
-    public VehiclesController(IVehicleService service, IFleetImageService imageService)
+    public VehiclesController(
+        IVehicleService service,
+        IFleetImageService imageService,
+        ITenantContext tenantContext,
+        ITenantRepository tenantRepository)
     {
         _service = service;
         _imageService = imageService;
+        _tenantContext = tenantContext;
+        _tenantRepository = tenantRepository;
     }
 
     // ── VEHICLE ENDPOINTS ────────────────────────────────────────────────
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Policy = "FleetOwnerOrAdmin")]
     [ProducesResponseType(typeof(VehicleResponseDto), 201)]
     public async Task<IActionResult> Create([FromBody] CreateVehicleDto dto)
     {
@@ -40,8 +50,15 @@ public sealed class VehiclesController : ControllerBase
     [HttpGet("{id}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(VehicleResponseDto), 200)]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(
+        Guid id,
+        [FromQuery] string? tenantSlug,
+        CancellationToken ct)
     {
+        var err = await PublicTenantResolver.TryResolveForPublicDataAsync(
+            this, _tenantContext, _tenantRepository, tenantSlug, ct);
+        if (err is not null) return err;
+
         var res = await _service.GetByIdAsync(id);
         return res.IsSuccess ? Ok(res.Value) : NotFound(res.Error);
     }
@@ -49,14 +66,22 @@ public sealed class VehiclesController : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<VehicleResponseDto>), 200)]
-    public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<IActionResult> GetPaged(
+        [FromQuery] string? tenantSlug,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
     {
+        var err = await PublicTenantResolver.TryResolveForPublicDataAsync(
+            this, _tenantContext, _tenantRepository, tenantSlug, ct);
+        if (err is not null) return err;
+
         var res = await _service.GetPagedAsync(page, pageSize);
         return res.IsSuccess ? Ok(res.Value) : BadRequest(res.Error);
     }
 
     [HttpPut("{id}")]
-    [Authorize]
+    [Authorize(Policy = "FleetOwnerOrAdmin")]
     [ProducesResponseType(typeof(VehicleResponseDto), 200)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateVehicleDto dto)
     {
@@ -68,8 +93,15 @@ public sealed class VehiclesController : ControllerBase
     [HttpGet("search")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<VehicleResponseDto>), 200)]
-    public async Task<IActionResult> Search([FromQuery] VehicleFilterDto filter, CancellationToken ct)
+    public async Task<IActionResult> Search(
+        [FromQuery] string? tenantSlug,
+        [FromQuery] VehicleFilterDto filter,
+        CancellationToken ct)
     {
+        var err = await PublicTenantResolver.TryResolveForPublicDataAsync(
+            this, _tenantContext, _tenantRepository, tenantSlug, ct);
+        if (err is not null) return err;
+
         var res = await _service.GetFilteredAsync(filter, ct);
         return res.IsSuccess ? Ok(res.Value) : BadRequest(res.Error);
     }
@@ -81,7 +113,7 @@ public sealed class VehiclesController : ControllerBase
     /// POST /api/vehicles/{vehicleId}/images
     /// </summary>
     [HttpPost("{vehicleId}/images")]
-    [Authorize]
+    [Authorize(Policy = "FleetOwnerOrAdmin")]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(FleetImageResponseDto), 201)]
     public async Task<IActionResult> UploadFleetImage(
@@ -116,8 +148,15 @@ public sealed class VehiclesController : ControllerBase
     [HttpGet("{vehicleId}/images")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(FleetImageResponseDto[]), 200)]
-    public async Task<IActionResult> GetVehicleImages(Guid vehicleId, CancellationToken ct)
+    public async Task<IActionResult> GetVehicleImages(
+        Guid vehicleId,
+        [FromQuery] string? tenantSlug,
+        CancellationToken ct)
     {
+        var err = await PublicTenantResolver.TryResolveForPublicDataAsync(
+            this, _tenantContext, _tenantRepository, tenantSlug, ct);
+        if (err is not null) return err;
+
         var res = await _imageService.GetFleetImagesAsync(vehicleId, ct);
         return res.IsSuccess ? Ok(res.Value) : BadRequest(new { error = res.Error });
     }
@@ -127,7 +166,7 @@ public sealed class VehiclesController : ControllerBase
     /// DELETE /api/vehicles/images/{imageId}
     /// </summary>
     [HttpDelete("images/{imageId}")]
-    [Authorize]
+    [Authorize(Policy = "FleetOwnerOrAdmin")]
     [ProducesResponseType(200)]
     public async Task<IActionResult> DeleteImage(int imageId, CancellationToken ct)
     {

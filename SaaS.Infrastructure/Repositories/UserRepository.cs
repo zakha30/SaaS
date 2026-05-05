@@ -3,6 +3,7 @@ using SaaS.Infrastructure.Data;
 using SaaS.Modules.Auth.Entities;
 using SaaS.Modules.Auth.Repositories;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,12 @@ namespace SaaS.Infrastructure.Repositories;
 
 public sealed class UserRepository(AppDbContext db) : IUserRepository
 {
+    public async Task<IReadOnlyList<AppUser>> GetAllInTenantAsync(CancellationToken ct = default) =>
+        await db.Users
+            .AsNoTracking()
+            .OrderBy(u => u.Email)
+            .ToListAsync(ct);
+
     public async Task<AppUser?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
         await db.Users
                 .FirstOrDefaultAsync(u => u.Id == id, ct);

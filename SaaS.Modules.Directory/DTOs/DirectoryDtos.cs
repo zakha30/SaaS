@@ -44,6 +44,7 @@ public sealed class DirectoryResponseDto
     public string? Description { get; set; }
     public string? Website { get; set; }
     public string MembershipTier { get; set; } = "Free";
+    public DateTime CreatedAt { get; set; }
     public DateTime ExpiresAt { get; set; }
 }
 

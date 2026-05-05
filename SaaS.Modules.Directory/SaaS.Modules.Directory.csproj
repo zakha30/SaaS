@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SaaS.Modules.Tenants\SaaS.Modules.Tenants.csproj" />
     <ProjectReference Include="..\SaaS.Shared\SaaS.Shared.csproj" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
-using System.Threading;
-using System.Threading.Tasks;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SaaS.Modules.Loads.DTOs;
 using SaaS.Modules.Loads.Services;
@@ -8,12 +8,10 @@ namespace SaaS.Modules.Loads.Controllers;
 
 [ApiController]
 [Route("api/quote-requests")]
-public sealed class QuoteRequestsController : ControllerBase
+public sealed class QuoteRequestsController(IQuoteRequestService service) : ControllerBase
 {
-    private readonly IQuoteRequestService service;
-    public QuoteRequestsController(IQuoteRequestService service) => this.service = service;
-
     [HttpPost]
+    [Authorize(Policy = "ShipperOrAdmin")]
     public async Task<IActionResult> Create([FromBody] CreateQuoteRequestDto dto, CancellationToken ct)
     {
         var created = await service.CreateAsync(dto, ct);
@@ -21,15 +19,20 @@ public sealed class QuoteRequestsController : ControllerBase
     }
 
     [HttpPost("submit")]
+    [Authorize(Policy = "TransporterOrAdmin")]
     public async Task<IActionResult> SubmitQuote([FromBody] QuoteSubmissionDto dto, CancellationToken ct)
     {
-        await service.SubmitQuoteAsync(dto, ct);
+        var userId = Guid.Parse(
+            User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? throw new UnauthorizedAccessException("User identity claim missing."));
+        await service.SubmitQuoteAsync(dto, userId, ct);
         return Accepted();
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(System.Guid id, CancellationToken ct)
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
+        _ = id;
         return NotFound();
     }
 }

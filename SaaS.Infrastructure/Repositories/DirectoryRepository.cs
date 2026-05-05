@@ -23,10 +23,16 @@ public sealed class DirectoryRepository : IDirectoryRepository
         var query = BaseQuery;
 
         if (!string.IsNullOrWhiteSpace(filter.Category))
-            query = query.Where(d => d.Category == filter.Category.Trim());
+        {
+            var c = filter.Category.Trim();
+            query = query.Where(d => d.Category.Contains(c));
+        }
 
         if (!string.IsNullOrWhiteSpace(filter.Province))
-            query = query.Where(d => d.Province == filter.Province.Trim());
+        {
+            var p = filter.Province.Trim();
+            query = query.Where(d => d.Province.Contains(p));
+        }
 
         if (!string.IsNullOrWhiteSpace(filter.Slug))
             query = query.Where(d => d.Slug == filter.Slug.Trim());

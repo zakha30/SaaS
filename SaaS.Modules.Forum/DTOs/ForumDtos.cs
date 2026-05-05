@@ -25,6 +25,7 @@ public sealed class ThreadResponseDto
     public string Category { get; set; } = string.Empty;
     public string Status { get; set; } = "Active";
     public string MembershipTier { get; set; } = "Free";
+    public DateTime CreatedAt { get; set; }
     public DateTime ExpiresAt { get; set; }
 }
 

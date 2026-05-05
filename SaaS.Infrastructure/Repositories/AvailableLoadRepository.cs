@@ -40,6 +40,18 @@ public sealed class AvailableLoadRepository : IAvailableLoadRepository
         if (!string.IsNullOrWhiteSpace(filter.Status))
             query = query.Where(l => l.Status == filter.Status.Trim());
 
+        if (!string.IsNullOrWhiteSpace(filter.Commodity))
+        {
+            var term = filter.Commodity.Trim();
+            query = query.Where(l => l.Commodity.Contains(term));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.WeightBracket))
+        {
+            var w = filter.WeightBracket.Trim();
+            query = query.Where(l => l.WeightBracket != null && l.WeightBracket.Contains(w));
+        }
+
         query = query.OrderByDescending(l => l.MembershipTier != "Free").ThenByDescending(l => l.CreatedAt);
 
         var total = await query.CountAsync(ct);

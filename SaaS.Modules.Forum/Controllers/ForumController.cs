@@ -30,6 +30,7 @@ public sealed class ForumController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(System.Guid id, CancellationToken ct)
     {
-        return NotFound();
+        var thread = await service.GetByIdAsync(id, ct);
+        return thread is null ? NotFound() : Ok(thread);
     }
 }

@@ -27,6 +27,12 @@ public sealed class ThreadService : IThreadService
         return new PagedResult<ThreadResponseDto>(dtos, paged.TotalCount, paged.Page, paged.PageSize);
     }
 
+    public async Task<ThreadResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        var entity = await repo.GetByIdAsync(id, ct);
+        return entity is null ? null : mapper.Map<ThreadResponseDto>(entity);
+    }
+
     public async Task<ThreadResponseDto> CreateAsync(CreateThreadDto dto, CancellationToken ct = default)
     {
         var entity = mapper.Map<Entities.ForumThread>(dto);

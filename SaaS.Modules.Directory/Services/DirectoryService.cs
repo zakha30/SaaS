@@ -27,6 +27,12 @@ public sealed class DirectoryService : IDirectoryService
         return new PagedResult<DirectoryResponseDto>(dtos, paged.TotalCount, paged.Page, paged.PageSize);
     }
 
+    public async Task<DirectoryResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        var entity = await repo.GetByIdAsync(id, ct);
+        return entity is null ? null : mapper.Map<DirectoryResponseDto>(entity);
+    }
+
     public async Task<DirectoryResponseDto> CreateAsync(CreateDirectoryEntryDto dto, CancellationToken ct = default)
     {
         var entity = mapper.Map<Entities.BusinessDirectoryEntry>(dto);
