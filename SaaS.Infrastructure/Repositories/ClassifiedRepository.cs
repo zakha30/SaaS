@@ -28,6 +28,9 @@ public sealed class ClassifiedRepository : IClassifiedRepository
         if (!string.IsNullOrWhiteSpace(filter.Province))
             query = query.Where(c => c.Province == filter.Province.Trim());
 
+        if (!string.IsNullOrWhiteSpace(filter.TradeKind))
+            query = query.Where(c => c.TradeKind == filter.TradeKind.Trim());
+
         query = query.OrderByDescending(c => c.MembershipTier != "Free").ThenByDescending(c => c.CreatedAt);
 
         var total = await query.CountAsync(ct);

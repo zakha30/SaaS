@@ -28,6 +28,9 @@ public sealed class JobRepository : IJobRepository
         if (!string.IsNullOrWhiteSpace(filter.Province))
             query = query.Where(j => j.Province == filter.Province.Trim());
 
+        if (!string.IsNullOrWhiteSpace(filter.PostKind))
+            query = query.Where(j => j.PostKind == filter.PostKind.Trim());
+
         if (!string.IsNullOrWhiteSpace(filter.EmploymentType))
             query = query.Where(j => j.EmploymentType == filter.EmploymentType.Trim());
 

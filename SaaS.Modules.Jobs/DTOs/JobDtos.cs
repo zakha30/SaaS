@@ -17,6 +17,9 @@ public sealed class CreateJobDto
     public string? City { get; set; }
     [MaxLength(5000)]
     public string Description { get; set; } = string.Empty;
+    [Required]
+    [MaxLength(32)]
+    public string PostKind { get; set; } = "OfferingJob";
     [MaxLength(100)]
     public string EmploymentType { get; set; } = string.Empty;
     [Range(typeof(decimal), "0", "100000000")]
@@ -35,6 +38,7 @@ public sealed class JobResponseDto
     public string Province { get; set; } = string.Empty;
     public string? City { get; set; }
     public string Description { get; set; } = string.Empty;
+    public string PostKind { get; set; } = "OfferingJob";
     public string EmploymentType { get; set; } = string.Empty;
     public decimal? Salary { get; set; }
     public string Currency { get; set; } = "ZAR";
@@ -47,6 +51,7 @@ public sealed record JobFilterDto
 {
     public string? Company { get; init; }
     public string? Province { get; init; }
+    public string? PostKind { get; init; }
     public string? EmploymentType { get; init; }
     public int Page { get; init; } = 1;
     public int PageSize { get; init; } = 20;

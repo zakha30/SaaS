@@ -9,6 +9,9 @@ public sealed class CreateClassifiedDto
     [Required]
     [MaxLength(200)]
     public string Title { get; set; } = string.Empty;
+    [Required]
+    [MaxLength(16)]
+    public string TradeKind { get; set; } = "Sell";
     [MaxLength(100)]
     public string Category { get; set; } = string.Empty;
     [MaxLength(100)]
@@ -47,6 +50,7 @@ public sealed record ClassifiedFilterDto
 {
     public string? Category { get; init; }
     public string? Province { get; init; }
+    public string? TradeKind { get; init; }
     public int Page { get; init; } = 1;
     public int PageSize { get; init; } = 20;
 }

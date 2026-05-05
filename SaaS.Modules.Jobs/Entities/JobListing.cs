@@ -11,6 +11,9 @@ public sealed class JobListing : TenantEntity
     public string Province { get; set; } = string.Empty;
     public string? City { get; set; }
     public string Description { get; set; } = string.Empty;
+    /// <summary>SeekingWork or OfferingJob — whether the poster is job-seeking or hiring.</summary>
+    public string PostKind { get; set; } = "OfferingJob";
+    /// <summary>Optional employment classification (e.g. Full-time). Not the same as PostKind.</summary>
     public string EmploymentType { get; set; } = string.Empty;
     public decimal? Salary { get; set; }
     public string Currency { get; set; } = "ZAR";

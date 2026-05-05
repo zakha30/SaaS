@@ -17,6 +17,7 @@ using SaaS.Modules.Auth.Services;
 using SaaS.Modules.Classifieds.Mappings;
 using SaaS.Modules.Classifieds.Repositories;
 using SaaS.Modules.Classifieds.Services;
+using SaaS.Modules.Cms.Services;
 using SaaS.Modules.Dashboard.Services;
 using SaaS.Modules.Directory.Mappings;
 using SaaS.Modules.Directory.Repositories;

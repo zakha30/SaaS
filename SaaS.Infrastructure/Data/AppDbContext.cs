@@ -61,7 +61,7 @@ public sealed class AppDbContext(
     // CMS
     public DbSet<HomePageContent> HomePageContents => Set<HomePageContent>();
     public DbSet<HomeSection> HomeSections => Set<HomeSection>();
-    public DbSet<HomeBlogPost> HomeBlogPosts
+    public DbSet<HomeBlogPost> HomeBlogPosts => Set<HomeBlogPost>();
     public DbSet<HomePageSection> HomePageSections { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

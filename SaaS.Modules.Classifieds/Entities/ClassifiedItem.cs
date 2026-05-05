@@ -7,6 +7,8 @@ public sealed class ClassifiedItem : TenantEntity
 {
     public Guid? PostedByUserId { get; set; }
     public string Title { get; set; } = string.Empty;
+    /// <summary>Buy or Sell.</summary>
+    public string TradeKind { get; set; } = "Sell";
     public string Category { get; set; } = string.Empty;
     public string Province { get; set; } = string.Empty;
     public string? City { get; set; }
