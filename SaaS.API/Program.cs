@@ -32,23 +32,23 @@ builder.Services.Configure<ForwardedHeadersOptions>(opts =>
     opts.KnownProxies.Clear();
 });
 
-// ── 2. Cookie Policy ──────────────────────────────────────────────────────────
-// Enforces SameSite=Lax globally and ensures Secure is set in production.
-// SameSite=Lax: cookies are sent on same-site requests and top-level navigations.
-// This provides CSRF protection for our auth cookies without breaking the UX.
-builder.Services.AddCookiePolicy(opts =>
-{
-    opts.HttpOnly       = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always;
-    opts.Secure         = CookieSecurePolicy.SameAsRequest; // Secure when HTTPS, not forced in dev
-    opts.MinimumSameSitePolicy = SameSiteMode.Lax;
-});
+    // ── 2. Cookie Policy ──────────────────────────────────────────────────────────
+    // Enforces SameSite=Lax globally and ensures Secure is set in production.
+    // SameSite=Lax: cookies are sent on same-site requests and top-level navigations.
+    // This provides CSRF protection for our auth cookies without breaking the UX.
+    builder.Services.AddCookiePolicy(opts =>
+    {
+        opts.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always;
+        opts.Secure = CookieSecurePolicy.Always;   // ← was: SameAsRequest
+        opts.MinimumSameSitePolicy = SameSiteMode.None;           // ← was: Lax
+    });
 
-// ── 3. CORS ───────────────────────────────────────────────────────────────────
-// AllowCredentials() is REQUIRED for HttpOnly cookie auth across origins.
-// WithOrigins() must list explicit URLs — wildcard (*) is forbidden with credentials.
-// Development  → appsettings.Development.json → ["http://localhost:3000"]
-// Production   → appsettings.Production.json  → ["https://app.yourdomain.com"]
-var allowedOrigins = builder.Configuration
+    // ── 3. CORS ───────────────────────────────────────────────────────────────────
+    // AllowCredentials() is REQUIRED for HttpOnly cookie auth across origins.
+    // WithOrigins() must list explicit URLs — wildcard (*) is forbidden with credentials.
+    // Development  → appsettings.Development.json → ["http://localhost:3000"]
+    // Production   → appsettings.Production.json  → ["https://app.yourdomain.com"]
+    var allowedOrigins = builder.Configuration
     .GetSection("AllowedOrigins")
     .Get<string[]>() ?? [];
 

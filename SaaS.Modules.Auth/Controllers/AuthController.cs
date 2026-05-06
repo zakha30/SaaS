@@ -26,17 +26,18 @@ public sealed class AuthController(
         Response.Cookies.Append(AccessTokenCookie, accessToken, new CookieOptions
         {
             HttpOnly = true,
-            Secure = isHttps,
-            SameSite = SameSiteMode.Lax,
+            Secure = true,                  // ← was: isHttps
+            SameSite = SameSiteMode.None,     // ← was: Lax
             Expires = DateTimeOffset.UtcNow.AddMinutes(expiryMinutes),
             Path = "/",
         });
 
+        // SetAuthCookies — refresh token
         Response.Cookies.Append(RefreshTokenCookie, refreshToken, new CookieOptions
         {
             HttpOnly = true,
-            Secure = isHttps,
-            SameSite = SameSiteMode.Lax,
+            Secure = true,                  // ← was: isHttps
+            SameSite = SameSiteMode.None,     // ← was: Lax
             Path = "/api/auth",
             Expires = DateTimeOffset.UtcNow.AddDays(refreshExpiryDays),
         });
@@ -49,17 +50,18 @@ public sealed class AuthController(
         Response.Cookies.Append(AccessTokenCookie, string.Empty, new CookieOptions
         {
             HttpOnly = true,
-            Secure = isHttps,
-            SameSite = SameSiteMode.Lax,
+            Secure = true,                  // ← was: isHttps
+            SameSite = SameSiteMode.None,     // ← was: Lax
             Expires = DateTimeOffset.UnixEpoch,
             Path = "/",
         });
 
+        // ClearAuthCookies — refresh token
         Response.Cookies.Append(RefreshTokenCookie, string.Empty, new CookieOptions
         {
             HttpOnly = true,
-            Secure = isHttps,
-            SameSite = SameSiteMode.Lax,
+            Secure = true,                  // ← was: isHttps
+            SameSite = SameSiteMode.None,     // ← was: Lax
             Expires = DateTimeOffset.UnixEpoch,
             Path = "/api/auth",
         });
