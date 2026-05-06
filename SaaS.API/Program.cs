@@ -205,7 +205,6 @@ if (!app.Environment.IsProduction())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "SaaS Transport API v1");
         c.RoutePrefix = "swagger";
     });
-    app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 }
 
 // 9. Authentication → Tenant resolution → Authorization (order is critical).
@@ -226,6 +225,33 @@ app.UseStaticFiles(new StaticFileOptions
 }); // serves wwwroot/
 app.MapControllers();
 app.MapHealthChecks("/health", new HealthCheckOptions { AllowCachingResponses = false });
+
+// Root landing page — deployed APIs should not look "blank" at GET /
+app.MapGet("/", (IWebHostEnvironment env) =>
+{
+    var swaggerSection = env.IsProduction()
+        ? "<p><small>Swagger UI is disabled in Production.</small></p>"
+        : "<p><a href=\"/swagger\">Open Swagger UI</a></p>";
+    var html = $"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>TransHub API</title>
+</head>
+<body style="font-family:system-ui,-apple-system,sans-serif;max-width:42rem;margin:2rem auto;padding:0 1rem;line-height:1.5">
+  <h1 style="margin-bottom:0.25rem">TransHub API</h1>
+  <p style="color:#475569;margin-top:0">HTTP API is running.</p>
+  <ul>
+    <li><a href="/health">Health check</a> — JSON status used by load balancers</li>
+  </ul>
+  {swaggerSection}
+</body>
+</html>
+""";
+    return Results.Content(html, "text/html; charset=utf-8");
+}).ExcludeFromDescription();
 
 await app.RunAsync();
 }
